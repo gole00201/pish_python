@@ -5,8 +5,9 @@ def parse_line(row, line_no):
     def warn(msg):
         print("WARNING: " + msg)
 
-    for elemt in row:
-        elemt.strip()
+    for i in range(len(row)):
+        row[i] = row[i].strip()
+
     try:
         year = int(row[0])
         month = int(row[1])
@@ -64,7 +65,7 @@ if month_filter is not None:
 
 line_datas = []
 
-with open(filename, "r", encoding="utf-8") as f:
+with open(filename) as f:
     line_number = 0
     for line in f:
         line_number += 1
@@ -78,49 +79,56 @@ with open(filename, "r", encoding="utf-8") as f:
         if line_data is not None:
             line_datas.append(line_data)
 
-
-# расчет статистики за год
-def year_stats(line_datas):
-    if not line_datas:
+def year_stats(datas):
+    if not datas:
         print("WARNING: Нет данных для обработки")
         return None
-    temp_middle = None
-    temp_max = None
-    temp_min = None  # Минимальная температура за год нам неизвестна
+
     temp_count = 0
     temp_sum = 0
 
-    for line_data in line_datas:
-        line_temp = line_data["temp"]
-        temp_sum = temp_sum + line_temp
+    temp_max = None
+    temp_min = None  # Минимальная температура неизвестна
+    temp_avg = None
 
+    for line in datas:
+        new_temp = line['temp']
+        temp_sum = temp_sum + new_temp
         temp_count = temp_count + 1
 
-        # Если минимальная тмепература за год нам неизвестна или температура
-        # в строке меньше чем минимальная температура за год, то
-        # минимальная темпереатура за год равна темепаруре в этой строке
+        # Если минимальная температура неизвестна или же текущая
+        # температура меньше чем ИЗВЕСТНАЯ минимальная,
+        # то я нашел новую минимальную температуру
 
-        if (temp_min is None) or (line_temp < temp_min):
-            temp_min = line_temp
-        if (temp_max is None) or (line_temp > temp_max):
-            temp_max = line_temp
+        if (temp_min is None) or (new_temp < temp_min):
+            temp_min = new_temp
 
-    temp_middle = temp_sum / temp_count
+        if (temp_max is None) or (new_temp > temp_max):
+            temp_max = new_temp
+
+    temp_avg = temp_sum / temp_count
 
     return {
-        "middle": temp_middle,
-        "min": temp_min,
-        "max": temp_max
+        "avg": temp_avg,
+        "max": temp_max,
+        "min": temp_min
     }
 
+# Посчитать месяца
 
-stats_for_year = year_stats(line_datas)
+# 1. Сделать две функции. Одна функция на случай если пользователь хочет 1 месяц
+# Вторая функция на случай если нужно обработать все
 
+# 2. Одна функция на все
+
+def mounth_stats(datas):
+    pass
+
+year_data = year_stats(line_datas)
 print()
-print("**************СТАТИСТИКА ЗА ГОД****************")
-print("МАКСИМАЛЬНАЯ: ", stats_for_year["max"])
-print("МИНИМАЛЬНАЯ : ", stats_for_year["min"])
-print("СРЕДНЯЯ     : ", stats_for_year["middle"])
-print("***********************************************")
+print("================ГОД=================")
+print("СРЕДНЯЯ:      ", year_data['avg'])
+print("МАКСИМАЛЬНАЯ: ", year_data['max'])
+print("МИНИМАЛЬНАЯ:  ", year_data['min'])
+print("====================================")
 print()
-# вывод на экран
